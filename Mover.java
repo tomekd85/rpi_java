@@ -6,12 +6,17 @@
  *  $Id: $
  */
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.*;
+
+import static java.lang.Thread.sleep;
 
 public class Mover implements Runnable{
 
   private BlockingQueue<Move> queue;;
   private static Mover instance;
+  private static Set<Move> currentMove;
 
   public BlockingQueue<Move> getQueue() {
     return queue;
@@ -19,6 +24,7 @@ public class Mover implements Runnable{
 
   private Mover(){
     this.queue = new LinkedBlockingQueue<>();
+    this.currentMove = new HashSet<>();
   }
 
   public static Mover getInstance(){
@@ -32,7 +38,7 @@ public class Mover implements Runnable{
     System.out.println("In main function.");
     Mover mover = Mover.getInstance();
     ExecutorService executorService = Executors.newFixedThreadPool(2);
-    MovementProducer movementProducer = new MovementProducer(mover.getQueue());
+    MovementProducer movementProducer = new SocketMovementProducer(mover.getQueue());
     executorService.execute(movementProducer);
     executorService.execute(mover);
     executorService.shutdown();
@@ -41,15 +47,27 @@ public class Mover implements Runnable{
   @Override
   public void run() {
     Move move;
-    try {
-      while (!(move = queue.take()).getMove().equals("Q")){
+    while (true) {
+      while ((move = queue.poll()) != null) {
+        updateCurrentMove(move);
         System.out.format("Move %s received\n", move.getMove());
-        Thread.sleep((int) Math.random() * 100);
       }
-    } catch (InterruptedException e){
-      e.printStackTrace();
+      doMove();
     }
   }
+
+  private void updateCurrentMove(Move move){
+    currentMove.add(move);
+  }
+
+  private void doMove(){
+    if (currentMove.size() == 1){
+      System.out.println("Moving Robot to direction: " + currentMove.iterator().next().getMove());
+    }
+    currentMove.clear();
+  }
+
+
 }
  
 

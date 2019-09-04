@@ -10,8 +10,8 @@ import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 
 public class MovementProducer implements Runnable {
-  private BlockingQueue<Move> queue;
-  private String []movements = {"N", "NE", "E", "SE", "S", "SW", "W", "NW", "STOP"};
+  protected BlockingQueue<Move> queue;
+  protected String []movements = {"N", "NE", "E", "SE", "S", "SW", "W", "NW", "STOP"};
 
   public MovementProducer(BlockingQueue<Move> queue){
       this.queue = queue;
